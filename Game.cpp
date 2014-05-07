@@ -26,7 +26,6 @@ Game::Game()
 	,board( Rect( 0, 0, graphics->getWidth(), graphics->getHeight() ), 7, 6 )
 	,playerSprite( { Texture( graphics->getRendererPtr(), "data/Bitcoin.png" ),
 		 			Texture(graphics->getRendererPtr(), "data/Litecoin.png") } )
-	//,litecoin( graphics->getRendererPtr(), "data/Litecoin.png" )
 	,cell( graphics->getRendererPtr(), "data/Cell.png" )
 	,selection( graphics->getRendererPtr(), "data/Selection.png" )
 	,dogeHead( graphics->getRendererPtr(), "data/DogeHead.png" )
@@ -64,13 +63,22 @@ void Game::run()
 		  if ( winner ) {
 			std::stringstream text;
 			text << "Player " << winner << " won the Gaem!!1!";
-			SDL_Color color{ 220, 220, 10 };
+			SDL_Color color{ 240, 240, 10 };
 			SDL_Surface* image = TTF_RenderUTF8_Solid( font, text.str().c_str(), color );
 			winText.createFromImageData( image );
 			SDL_FreeSurface( image );
 			assert( winText.getData() );
 			std::cout << text.str() << "\n";
 		  }
+		}
+		if ( quit && playAgain() ) {
+			quit = false;
+			doPlayAgain = false;
+			if ( winner == 1 ) { currentPlayer = 2; }
+			else { currentPlayer = 1; }
+			winner = 0;
+			board.fill( 0 );
+			selectedColumn = std::ceil( board.getColumns() / 2 );
 		}
 	}
 }
@@ -143,18 +151,15 @@ void Game::render()
 	}
 	
 	if ( winner ) {
-		// DOGE!!!
 		dogeHead.draw( Rect( graphics->getWidth() / 2 - 200,
 							graphics->getHeight() / 2 - 200,
 							400, 400 ) );
 		winText.draw( (graphics->getWidth() - winText.getClip().w) / 2, 80 );
 	} else {
-	
 		if ( currentPlayer > playerSprite.size() ) {
 			std::cout << "Player " << currentPlayer << " is not valid.\n";
 			currentPlayer = playerSprite.size();
 		}
-	
 		if ( selectedColumn != (unsigned int)-1 ) {
 			playerSprite[ currentPlayer-1 ].setAlpha( .6 );
 			playerSprite[ currentPlayer-1 ].
@@ -178,10 +183,10 @@ bool Game::handleEvents()
 		quit = true;
 		break;
 	case SDL_KEYDOWN:
-		if ( winner ) { quit = true; break; }
 		switch( e.key.keysym.sym ) {
 		case SDLK_RETURN:
 		case SDLK_SPACE:
+			if ( winner ) { doPlayAgain = true; break; }
 			board.dropPiece( currentPlayer, selectedColumn );
 			if ( currentPlayer == 1 ) { currentPlayer = 2; }
 			else { currentPlayer = 1; }
@@ -200,6 +205,7 @@ bool Game::handleEvents()
 			break;
 		default: break;
 		}
+		if ( winner ) { quit = true; }
 		break;
 	default: break;
 	}

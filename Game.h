@@ -19,11 +19,12 @@ public:
 	void run();
 	unsigned int getWinner() const { return winner; }
 	unsigned int getCurrentPlayer() const { return currentPlayer; }
-
+	
+	bool playAgain() const { return doPlayAgain; }
+	
 private:
 	void update();
 	void render();
-	//void renderWinScreen();
 	bool handleEvents();
 	
 	PtrS( Graphics ) graphics;
@@ -43,6 +44,7 @@ private:
 	unsigned int currentPlayer = 1;
 	unsigned int winner = 0;
 	bool quit = false;
+	bool doPlayAgain = false;
 };
 
 

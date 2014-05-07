@@ -119,6 +119,16 @@ unsigned int Board::findWinner()
 }
 
 
+void Board::fill( unsigned int value )
+{
+	for ( unsigned int c = 0; c < cells.size(); ++c ) {
+	  for ( unsigned int r = 0; r < cells[0].size(); ++r ) {
+		cells[c][r] = 0;
+	  }
+	}
+}
+
+
 void Board::dropPiece( int value, unsigned int column ) {
 	if ( column >= getColumns() ) { return; }
 	for ( int i = rows-1; i >= 0; --i ) {

@@ -63,6 +63,8 @@ public:
 	unsigned int getWinStartingRow() const { return winStartingRow; }
 	unsigned int getWinDirection() const { return winDirection; }
 	
+	void fill( unsigned int value );
+	
 	friend std::ostream& operator<<( std::ostream&, const Board board );
 	
 	typedef typename std::vector<std::vector<int>>::iterator iterator;
