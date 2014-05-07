@@ -4,8 +4,9 @@
 
 int main( int argc, char* argv[] ) {
 	Game::init();
-	Game game;
-	game.run();
+	Game* game = new Game;
+	game->run();
+	delete game;
 	Game::shutdown();
 	return 0;
 }
