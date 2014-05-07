@@ -3,13 +3,13 @@ BIN 	:= game
 #BINDIR	:= $(PREFIX)/bin
 CC  	:= g++
 CFLAGS 	:= -g -c -std=c++0x -Wall -pedantic `sdl2-config --cflags`
-LINKERFLAGS := -Wl,-rpath,\$$ORIGIN/lib/ -static-libgcc
+LINKERFLAGS := -Wl,-rpath,\$$ORIGIN/lib/x86_64/ -static-libgcc
 INCLUDES:= -Iinclude/
-LIBS 	:= -Llib/ -lSDL2 -lSDL2_image -lSDL2_ttf #-lGL #box2d #sfml
+LIBS 	:= -Llib/x86_64/ -lSDL2 -lSDL2_image -lSDL2_ttf #-lGL #box2d #sfml
 DEFINES	:= -DDATE='"'$$DATE'"'
 SRC 	:= $(PWD)
 
-SOURCES	:=	 				\
+SOURCES	:=	 			\
 	$(SRC)/main.cpp 		\
 	$(SRC)/Game.cpp			\
 	$(SRC)/Board.cpp		
