@@ -1,12 +1,15 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
+#include "SDL2/SDL_events.h"
+#include "SDL2/SDL_render.h"
+#include "SDL2/SDL_ttf.h"
+
 #include "Rect.h"
 #include "Utility.h"
 
-
-#define Renderer SDL_Renderer
-#define Window SDL_Window
+typedef SDL_Renderer Renderer;
+typedef SDL_Window Window;
 
 //typedef std::unique_ptr< SDL_Renderer, void (*)( SDL_Renderer* ) > Renderer;
 
@@ -20,7 +23,6 @@ Renderer renderer = newResource(
 						SDL_RENDERER_ACCELERATED ),
 					SDL_DestroyRenderer );
 */
-
 
 
 class RenderTarget
@@ -44,7 +46,6 @@ public:
 
 
 
-
 class Graphics
 {
 public:
@@ -63,10 +64,13 @@ public:
 		,renderer( renderer, SDL_DestroyRenderer )
 	{}
 	
-	~Graphics() {
-		SDL_DestroyRenderer( renderer.get() );
-		SDL_DestroyWindow( window.get() );
-	}
+	~Graphics() {}
+	
+	// Render whats on the screen.
+	void display() { SDL_RenderPresent( renderer.get() ); }
+	
+	// Clear whats on the screen.
+	void clear() { SDL_RenderClear( renderer.get() ); }
 	
 	SDL_Window* getWindow() { return window.get(); }
 	
@@ -76,16 +80,32 @@ public:
 	
 	PtrS( SDL_Renderer ) getRendererPtr() { return renderer; }
 	
+	//void setWidth( int width ) {}
+	//void setWidth( int width ) {}
+	
+	int getWidth() const { return width; }
+	
+	int getHeight() const { return height; }
+	
 private:
 	
 	SDL_Window* createWindow() {
-		return SDL_CreateWindow( "Game", 0, 0, 800, 600,
+		//std::cout << "Creating window: " << width << " " << height << "\n";
+		return SDL_CreateWindow( "Game", 0, 0, width, height,
 								SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 	}
 	
-	SDL_Renderer* createRenderer() {
-		return SDL_CreateRenderer( window.get(), -1, SDL_RENDERER_ACCELERATED );
+	SDL_Renderer* createRenderer()
+	{
+		SDL_Renderer* renderer =
+			SDL_CreateRenderer( window.get(), -1, SDL_RENDERER_ACCELERATED );
+		SDL_SetRenderDrawColor( renderer, 0, 0, 0, 255 );
+		SDL_RenderClear( renderer );
+		return renderer;
 	}
+	
+	int width = 770;
+	int height = 660;
 	
 	PtrS( SDL_Window ) window;
 	PtrS( SDL_Renderer ) renderer;

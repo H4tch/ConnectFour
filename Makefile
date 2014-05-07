@@ -10,7 +10,9 @@ DEFINES	:= -DDATE='"'$$DATE'"'
 SRC 	:= $(PWD)
 
 SOURCES	:= 				\
-	$(SRC)/main.cpp 			
+	$(SRC)/main.cpp 		\
+	$(SRC)/Game.cpp			\
+	$(SRC)/Board.cpp		
 
 OBJECTS	:= $(SOURCES:.cpp=.o)
 

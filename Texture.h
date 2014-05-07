@@ -11,12 +11,20 @@
 class Texture : public Renderable
 {
 public:
+	Texture( PtrS( Renderer ) renderer )
+		: renderer( renderer )
+	{}
 	
 	Texture( PtrS( Renderer ) renderer, std::string filename )
 		: renderer( renderer )
 	{
-		Image i( filename );
-		createFromImage( i );
+		Image image( filename );
+		createFromImage( image );
+		if ( !texture ) {
+			std::cout << "Failed to create Texture of '" << image.getFilename()
+					<< "' image.\n";
+			return;
+		}
 	}
 	
 	Texture( PtrS( Renderer ) renderer, Image& image )
@@ -30,23 +38,12 @@ public:
 		}
 	}
 	
-	bool createFromImage( Image& image )
-	{
-		if ( !image.getData() ) {
-			return false;
-		}
-		if ( texture ) {
-			SDL_DestroyTexture( texture );
-			texture = nullptr;
-			clip = Rect();
-		}
-		
-		texture = SDL_CreateTextureFromSurface( renderer.lock().get(),
-												image.getData() );
-		if ( !texture ) { return false; }
-		
-		SDL_QueryTexture( texture, nullptr, nullptr, &clip.w, &clip.h );
-		return true;
+	~Texture() {
+		SDL_DestroyTexture( texture );
+	}
+	
+	bool createFromImage( Image& image ) {
+		return createFromImageData( image.getData() );
 	}
 	
 	void draw( int x, int y) {
@@ -65,12 +62,42 @@ public:
 	
 	void draw( RenderTarget& render ) { }
 	
+	void setClip( Rect rect ) { clip = rect; }
+	
 	Rect getClip() const { return clip; }
+	
+	void setAlpha( double alpha ) {
+		unsigned char alpha8 = (alpha * 255);
+		SDL_SetTextureAlphaMod( texture, alpha8 );
+	}
+	
+	double getAlpha() const {
+		unsigned char alpha;
+		SDL_GetTextureAlphaMod( texture, &alpha );
+		return (alpha / 255);
+	}
 	
 	SDL_Texture* getData() { return texture; }
 	
+	bool createFromImageData( SDL_Surface* image )
+	{
+		if ( !image ) { return false; }
+		if ( texture ) {
+			SDL_DestroyTexture( texture );
+			texture = nullptr;
+			clip = Rect();
+		}
+		
+		texture = SDL_CreateTextureFromSurface( renderer.lock().get(), image );
+		if ( !texture ) { return false; }
+		
+		SDL_QueryTexture( texture, nullptr, nullptr, &clip.w, &clip.h );
+		return true;
+	}
+	
 private:
 	PtrW( Renderer ) renderer;
+	// This should be a shared pointer.
 	SDL_Texture* texture = nullptr;
 	Rect clip = Rect();
 };

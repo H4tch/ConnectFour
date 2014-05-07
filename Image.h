@@ -1,8 +1,9 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#include "SDL2/SDL_image.h"
+
 #include <string>
-#include <iostream>
 
 
 class Image

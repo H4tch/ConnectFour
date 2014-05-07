@@ -26,6 +26,13 @@ newResource( T* instance, Destructor d ) {
 #define PtrS( type ) std::shared_ptr<type>
 
 
+template<typename T>
+T clamp( T value, T low, T high ) {
+	if ( value <= low ) { return low; }
+	if ( value >= high ) { return high; }
+	return value;
+}
+
 
 
 #endif //UTILITY_H
