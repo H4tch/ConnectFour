@@ -93,6 +93,8 @@ void Game::render()
 		}
 	}
 	
+	// Highlight the winning cells.
+	// TODO: Highlight matches greater than four. Add Boad::winningMatches
 	if ( winner ) {
 		unsigned int c,r;
 		c = board.getWinStartingCol();
@@ -146,17 +148,19 @@ void Game::render()
 							graphics->getHeight() / 2 - 200,
 							400, 400 ) );
 		winText.draw( (graphics->getWidth() - winText.getClip().w) / 2, 80 );
-	}
+	} else {
 	
-	if ( currentPlayer > playerSprite.size() ) {
-		std::cout << "Player " << currentPlayer << " is not valid.\n";
-		currentPlayer = playerSprite.size();
-	}
+		if ( currentPlayer > playerSprite.size() ) {
+			std::cout << "Player " << currentPlayer << " is not valid.\n";
+			currentPlayer = playerSprite.size();
+		}
 	
-	if ( selectedColumn != (unsigned int)-1 ) {
-		playerSprite[ currentPlayer-1 ].setAlpha( .6 );
-		playerSprite[ currentPlayer-1 ].draw( board.getCellBox( selectedColumn, 0 ) );
-		playerSprite[ currentPlayer-1 ].setAlpha( 1 );
+		if ( selectedColumn != (unsigned int)-1 ) {
+			playerSprite[ currentPlayer-1 ].setAlpha( .6 );
+			playerSprite[ currentPlayer-1 ].
+					draw( board.getCellBox( selectedColumn, 0 ) );
+			playerSprite[ currentPlayer-1 ].setAlpha( 1 );
+		}
 	}
 	
 	graphics->display();
