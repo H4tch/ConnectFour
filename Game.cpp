@@ -11,6 +11,12 @@ void Game::init() {
 	SDL_Init( SDL_INIT_EVERYTHING );
 	Image::init();
 	TTF_Init();
+	
+	if ( !SDL_SetHintWithPriority(
+			SDL_HINT_RENDER_SCALE_QUALITY, "1", SDL_HINT_OVERRIDE ) )
+	{
+		std::cout << "Failed to set render quality.\n";
+	}
 }
 
 

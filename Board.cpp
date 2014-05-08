@@ -143,8 +143,8 @@ void Board::dropPiece( int value, unsigned int column ) {
 	for ( int i = rows-1; i >= 0; --i ) {
 		if ( !get( column, i ) ) {
 			set( column, i, value );
-			std::cout << value << " Inserted"
-					<< " at (" << column << "," << i << ")\n";
+			//std::cout << value << " Inserted"
+			//		<< " at (" << column << "," << i << ")\n";
 			break;
 		}
 	}
