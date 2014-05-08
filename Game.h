@@ -42,7 +42,7 @@ private:
 	
 	unsigned int selectedColumn = 0;
 	unsigned int currentPlayer = 1;
-	unsigned int winner = 0;
+	int winner = 0;
 	bool quit = false;
 	bool doPlayAgain = false;
 };

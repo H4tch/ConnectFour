@@ -22,7 +22,7 @@ Board::Board( Rect rect, int columns, int rows )
 }
 
 
-unsigned int Board::findWinner()
+int Board::findWinner()
 {
 	unsigned int match = 0;
 	unsigned int matches = 1;
@@ -36,7 +36,7 @@ unsigned int Board::findWinner()
 		match = get( c, r );
 		if ( !match ) { break; }
 		matches = 1;
-
+		
 		// ### Check horizontal matches. ###
 		checkCol = c-1;
 		if ( checkCol < 2 ) { goto secondCheck; }
@@ -44,21 +44,21 @@ unsigned int Board::findWinner()
 			++matches;
 			--checkCol;
 		}
-		if ( matches == 4 ) {
+		if ( matches >= 4 ) {
 			winDirection = WinDirection::Horizontal;
 			winStartingCol = c;
 			winStartingRow = r;
 			return match;
 		}
-
+		
 		
 		// ### Check upper-left diagonal matches. ###
 	  secondCheck:
 		matches = 1;
 		checkCol = c-1;
 		checkRow = r-1;
+		if ( checkRow < 2 ) { continue; }
 		if ( checkCol < 2 ) { goto thirdCheck; }
-		if ( checkRow < 2 ) { goto thirdCheck; }
 		while ( valid( checkCol, checkRow )
 				&& get( checkCol, checkRow ) == match )
 		{
@@ -66,12 +66,14 @@ unsigned int Board::findWinner()
 			--checkCol;
 			--checkRow;
 		}
-		if ( matches == 4 ) {
+		if ( matches >= 4 ) {
 			winDirection = WinDirection::UpLeft;
 			winStartingCol = c;
 			winStartingRow = r;
+			std::cout << "C: " << c << " R: " << r << "\n";
 			return match;
 		}
+		
 		
 		// ### Check upper-right diagonal matches. ###
 	  thirdCheck:
@@ -86,10 +88,11 @@ unsigned int Board::findWinner()
 			++checkCol;
 			--checkRow;
 		}
-		if ( matches == 4 ) {
+		if ( matches >= 4 ) {
 			winDirection = WinDirection::UpRight;
 			winStartingCol = c;
 			winStartingRow = r;
+			std::cout << "C: " << c << " R: " << r << "\n";
 			return match;
 		}
 		
@@ -106,7 +109,6 @@ unsigned int Board::findWinner()
 			--checkRow;
 		}
 		
-		//std::cout << "Found " << matches << " matches\n";
 		if ( matches == 4 ) {
 			winDirection = WinDirection::Vertical;
 			winStartingCol = c;
@@ -115,6 +117,13 @@ unsigned int Board::findWinner()
 		}
 	  }
 	}
+	
+	// Check if the board is full.
+	for( unsigned int c = 0; c < cells.size(); ++c ) {
+		if ( !cells[c][0] ) { break; }
+		if ( c == cells.size() - 1 ) { return -1; }
+	}
+	
 	return 0;
 }
 

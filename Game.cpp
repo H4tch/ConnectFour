@@ -62,7 +62,9 @@ void Game::run()
 		  winner = board.findWinner();
 		  if ( winner ) {
 			std::stringstream text;
-			text << "Player " << winner << " won the Gaem!!1!";
+			if ( winner == -1 ) { text << "Tie Game!! Noebody wins :(";
+			} else { text << "Player " << winner << " won the Gaem!!1!"; }
+			
 			SDL_Color color{ 240, 240, 10 };
 			SDL_Surface* image = TTF_RenderUTF8_Solid( font, text.str().c_str(), color );
 			winText.createFromImageData( image );
@@ -74,8 +76,14 @@ void Game::run()
 		if ( quit && playAgain() ) {
 			quit = false;
 			doPlayAgain = false;
-			if ( winner == 1 ) { currentPlayer = 2; }
-			else { currentPlayer = 1; }
+			if ( winner == -1 ) {
+				if ( currentPlayer == 1 ) { currentPlayer = 2; }
+				else { currentPlayer = 1; }
+			} else if ( winner == 1 ) {
+				currentPlayer = 2;
+			} else {
+				currentPlayer = 1;
+			}
 			winner = 0;
 			board.fill( 0 );
 			selectedColumn = std::ceil( board.getColumns() / 2 );
@@ -102,34 +110,21 @@ void Game::render()
 	}
 	
 	// Highlight the winning cells.
-	// TODO: Highlight matches greater than four. Add Boad::winningMatches
 	if ( winner ) {
 		unsigned int c,r;
 		c = board.getWinStartingCol();
 		r = board.getWinStartingRow();
-		selection.draw( board.getFullCellBox( c, r ) );
-		switch( board.getWinDirection() ) {
-		case Board::WinDirection::Horizontal:
-			selection.draw( board.getFullCellBox( c-1, r ) );
-			selection.draw( board.getFullCellBox( c-2, r ) );
-			selection.draw( board.getFullCellBox( c-3, r ) );
-			break;
-		case Board::WinDirection::UpLeft:
-			selection.draw( board.getFullCellBox( c-1, r-1 ) );
-			selection.draw( board.getFullCellBox( c-2, r-2 ) );
-			selection.draw( board.getFullCellBox( c-3, r-3 ) );
-			break;
-		case Board::WinDirection::UpRight:
-			selection.draw( board.getFullCellBox( c+1, r-1 ) );
-			selection.draw( board.getFullCellBox( c+2, r-2 ) );
-			selection.draw( board.getFullCellBox( c+3, r-3 ) );
-			break;
-		case Board::WinDirection::Vertical:
-			selection.draw( board.getFullCellBox( c, r-1 ) );
-			selection.draw( board.getFullCellBox( c, r-2 ) );
-			selection.draw( board.getFullCellBox( c, r-3 ) );
-			break;
-		default: break;
+		int stepCol = -1;
+		int stepRow = -1;		
+		unsigned int winDir = board.getWinDirection();
+		if ( winDir == Board::WinDirection::UpRight ) { stepCol = 1; }
+		else if ( winDir == Board::WinDirection::Vertical ) { stepCol = 0; }
+		else if ( winDir == Board::WinDirection::Horizontal ) { stepRow = 0; }
+		
+		while( board.valid( c, r ) && ((int)board.get( c, r ) == winner) ) {
+			selection.draw( board.getFullCellBox( c, r ) );
+			r += stepRow;
+			c += stepCol;
 		}
 	}
 	

@@ -37,7 +37,7 @@ public:
 		cells[c][r] = value;
 	}
 	
-	unsigned int findWinner(); 
+	int findWinner(); 
 	
 	void dropPiece( int value, unsigned int column );
 	
@@ -71,11 +71,11 @@ public:
 	iterator begin() { return cells.begin(); }
 	iterator end() { return cells.end(); }
 	
-private:
 	bool valid( unsigned int c, unsigned int r ) const {
 		return ( c < columns ) && ( r < rows );
 	}
 	
+private:
 	std::vector< std::vector<int> > cells;
 	Rect box;
 	unsigned int cellSize = 0;
