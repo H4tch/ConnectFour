@@ -168,7 +168,6 @@ Rect Board::getFullCellBox( int c, int r ) {
 
 void Board::drawGrid( Renderer& renderer )
 {
-	SDL_SetRenderDrawColor( &renderer, 50, 50, 200, 255 );
 	Rect b = box;
 	
 	// Draw vertical lines.

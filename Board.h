@@ -71,6 +71,8 @@ public:
 	iterator begin() { return cells.begin(); }
 	iterator end() { return cells.end(); }
 	
+	Rect getBox() const { return box; }
+	
 	bool valid( unsigned int c, unsigned int r ) const {
 		return ( c < columns ) && ( r < rows );
 	}

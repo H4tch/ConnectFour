@@ -94,23 +94,38 @@ void Game::run()
 
 void Game::render()
 {
-	SDL_SetRenderDrawColor( graphics->getRenderer(), 220, 220, 220, 255 );
+	SDL_SetRenderDrawBlendMode( graphics->getRenderer(), SDL_BLENDMODE_BLEND );
+	SDL_SetRenderDrawColor( graphics->getRenderer(), 32, 32, 32, 255 );
+	SDL_SetRenderDrawColor( graphics->getRenderer(), 230, 230, 230, 255 );
 	graphics->clear();
 	
-	for ( unsigned int c = 0; c < board.getColumns(); ++c ) {
-		if ( !winner && (c == selectedColumn) ) {
-			for ( unsigned int r = 0; r < board.getRows(); ++r ) {
-				selection.draw( board.getFullCellBox( c, r ) );
-			}
-		} else {
-			for ( unsigned int r = 0; r < board.getRows(); ++r ) {
-				cell.draw( board.getFullCellBox( c, r ) );
-			}
-		}
+	if ( currentPlayer > playerSprite.size() ) {
+		std::cout << "Player " << currentPlayer << " is not valid.\n";
+		currentPlayer = playerSprite.size();
+	}
+	if ( selectedColumn != (unsigned int)-1 ) {
+		playerSprite[ currentPlayer-1 ].setAlpha( .6 );
+		playerSprite[ currentPlayer-1 ].
+				draw( board.getCellBox( selectedColumn, 0 ) );
+		playerSprite[ currentPlayer-1 ].setAlpha( 1 );
 	}
 	
+	for ( unsigned int c = 0; c < board.getColumns(); ++c ) {
+	  for ( unsigned int r = 0; r < board.getRows(); ++r ) {
+		unsigned int value = board.get( c, r );
+		if ( value - 1 > playerSprite.size() ) { /* invalid player */ }
+		else { playerSprite[ value-1 ].draw( board.getCellBox( c, r ) ); }
+		if ( !winner && (c == selectedColumn) ) {
+			selection.draw( board.getFullCellBox( c, r ) );
+		} else {
+			cell.draw( board.getFullCellBox( c, r ) );
+		}
+	  }
+	}
+
 	// Highlight the winning cells.
-	if ( winner ) {
+	if ( winner )
+	{
 		unsigned int c,r;
 		c = board.getWinStartingCol();
 		r = board.getWinStartingRow();
@@ -128,41 +143,22 @@ void Game::render()
 		}
 	}
 	
-	SDL_SetRenderDrawColor( graphics->getRenderer(), 255, 0, 255, 255 );
-	board.drawGrid( *graphics->getRenderer() );
-	
-	unsigned int value = 0;
-	for ( int c = board.getColumns()-1; c >= 0; --c ) {
-		for ( int r = board.getRows()-1; r >= 0; --r ) {
-			value = board.get( c, r );
-			if ( value == 0 ) {
-				break;
-			}
-			if ( value - 1 > playerSprite.size() ) {
-				// draw invalid texture
-			}
-			playerSprite[ value-1 ].draw( board.getCellBox( c, r ) );
-		}
-	}
+	SDL_SetRenderDrawColor( graphics->getRenderer(), 50, 50, 200, 255 );	
+	SDL_SetRenderDrawColor( graphics->getRenderer(), 0, 0, 0, 100 );
+	//board.drawGrid( *graphics->getRenderer() );	
 	
 	if ( winner ) {
+		// Make background faded.
+		SDL_SetRenderDrawColor( graphics->getRenderer(), 0, 0, 0, 92 );
+		Rect box = board.getBox();
+		SDL_RenderFillRect( graphics->getRenderer(), (const SDL_Rect*)&box );
+		
 		dogeHead.draw( Rect( graphics->getWidth() / 2 - 200,
 							graphics->getHeight() / 2 - 200,
 							400, 400 ) );
 		winText.draw( (graphics->getWidth() - winText.getClip().w) / 2, 80 );
-	} else {
-		if ( currentPlayer > playerSprite.size() ) {
-			std::cout << "Player " << currentPlayer << " is not valid.\n";
-			currentPlayer = playerSprite.size();
-		}
-		if ( selectedColumn != (unsigned int)-1 ) {
-			playerSprite[ currentPlayer-1 ].setAlpha( .6 );
-			playerSprite[ currentPlayer-1 ].
-					draw( board.getCellBox( selectedColumn, 0 ) );
-			playerSprite[ currentPlayer-1 ].setAlpha( 1 );
-		}
 	}
-	
+		
 	graphics->display();
 }
 
