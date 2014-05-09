@@ -68,7 +68,7 @@ void Game::run()
 		  winner = board.findWinner();
 		  if ( winner ) {
 			std::stringstream text;
-			if ( winner == -1 ) { text << "Tie Game!! Noebody wins :(";
+			if ( winner == -1 ) { text << "Tie Game!! Noebody wins :'-(";
 			} else { text << "Player " << winner << " won the Gaem!!1!"; }
 			
 			SDL_Color color{ 240, 240, 10 };

@@ -11,11 +11,11 @@
 class Texture : public Renderable
 {
 public:
-	Texture( PtrS( Renderer ) renderer )
+	Texture( PtrS<Renderer> renderer )
 		: renderer( renderer )
 	{}
 	
-	Texture( PtrS( Renderer ) renderer, std::string filename )
+	Texture( PtrS<Renderer> renderer, std::string filename )
 		: renderer( renderer )
 	{
 		Image image( filename );
@@ -27,7 +27,7 @@ public:
 		}
 	}
 	
-	Texture( PtrS( Renderer ) renderer, Image& image )
+	Texture( PtrS<Renderer> renderer, Image& image )
 		: renderer( renderer )
 	{
 		createFromImage( image );
@@ -96,7 +96,7 @@ public:
 	}
 	
 private:
-	PtrW( Renderer ) renderer;
+	PtrW<Renderer> renderer;
 	// This should be a shared pointer.
 	SDL_Texture* texture = nullptr;
 	Rect clip = Rect();

@@ -19,11 +19,14 @@ newResource( T* instance, Destructor d ) {
 }
 
 
-#define PtrU( type ) std::unique_ptr<type>
+template<typename T>
+using PtrU = std::unique_ptr<T>;
 
-#define PtrW( type ) std::weak_ptr<type>
+template<typename T>
+using PtrW = std::weak_ptr<T>;
 
-#define PtrS( type ) std::shared_ptr<type>
+template<typename T>
+using PtrS = std::shared_ptr<T>;
 
 
 template<typename T>

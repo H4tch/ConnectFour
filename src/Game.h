@@ -27,13 +27,15 @@ private:
 	void render();
 	bool handleEvents();
 	
-	PtrS( Graphics ) graphics;
+	// This shouldn't be shared.
+	PtrS<Graphics> graphics;
 	Board board;
 	std::array<Texture, 2> playerSprite;
 	Texture cell;
 	Texture selection;
 	
 	Texture dogeHead;
+	// Todo: Roate and scale in-out the dogeHead.
 	double dogeRot = 0;
 	double dogeScale = 0;
 	
@@ -45,6 +47,9 @@ private:
 	int winner = 0;
 	bool quit = false;
 	bool doPlayAgain = false;
+	//enum GameType { Best2Of3 = 1 };
+	//unsigned int gametype = 1;
+	//std::array<2, unsigned int> scores;
 };
 
 

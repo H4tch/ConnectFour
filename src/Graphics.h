@@ -11,28 +11,12 @@
 typedef SDL_Renderer Renderer;
 typedef SDL_Window Window;
 
-//typedef std::unique_ptr< SDL_Renderer, void (*)( SDL_Renderer* ) > Renderer;
-
-/*Window window = newResource(
-				SDL_CreateWindow( "Game", 0, 0, 800, 600,
-							SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE ),
-				SDL_DestroyWindow );
-
-Renderer renderer = newResource(
-					SDL_CreateRenderer( window.get(), -1,
-						SDL_RENDERER_ACCELERATED ),
-					SDL_DestroyRenderer );
-*/
-
-
-class RenderTarget
-{};
-
+class RenderTarget {};
 
 
 class Renderable
 {
-	//PtrW( Graphics ) graphics;
+	//PtrW<Graphics> graphics;
 public:
 	virtual void draw( int x, int y ) = 0;
 	virtual void draw( Rect rect ) = 0;
@@ -76,9 +60,9 @@ public:
 	
 	SDL_Renderer* getRenderer() { return renderer.get(); }
 	
-	PtrS( SDL_Window ) getWindowPtr() { return window; }
+	PtrS<SDL_Window> getWindowPtr() { return window; }
 	
-	PtrS( SDL_Renderer ) getRendererPtr() { return renderer; }
+	PtrS<SDL_Renderer> getRendererPtr() { return renderer; }
 	
 	//void setWidth( int width ) {}
 	//void setWidth( int width ) {}
@@ -107,8 +91,8 @@ private:
 	int width = 770;
 	int height = 660;
 	
-	PtrS( SDL_Window ) window;
-	PtrS( SDL_Renderer ) renderer;
+	PtrS<SDL_Window> window;
+	PtrS<SDL_Renderer> renderer;
 };
 
 
