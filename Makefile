@@ -12,10 +12,12 @@ LIBDIR	:= $(PWD)/lib
 SYSTEM	 = $(OS)_$(ARCH)
 CC  	:= g++
 CCFLAGS	:= -c -std=c++0x -Wall -pedantic `sdl2-config --cflags`
-LINKERFLAGS = -fuse-ld=gold -Wl,-rpath,\$$ORIGIN/$(LIBDIR) -static-libgcc
+LINKERFLAGS = -fuse-ld=gold -Wl,-Bdynamic,-rpath,\$$ORIGIN/$(LIBDIR)
 INCLUDES:= -Iinclude/
 LIBS 	 = -L$(LIBDIR) -lSDL2 -lSDL2_image -lSDL2_ttf #-lGL #box2d #sfml
-WINLIBS	:= -lmingw32 -lSDL2main -mwindows -lwinmm 
+STATICLIBS := -Wl,-Bstatic -static-libgcc -static-libstdc++ 
+WINLIBS	:= -lmingw32 -lSDL2main -mwindows -lwinmm
+STATICWINLIBS := 
 DEFINES	:= -DDATE='"'$$DATE'"'
 
 
@@ -96,6 +98,7 @@ ifeq ($(ARCH),x86_64)
 	ifeq ($(OS), Windows_NT)
 		CC = x86_64-w64-mingw32-g++
 		INCLUDES += -I/usr/x86_64-w64-mingw32/include/
+		STATICLIBS += $(STATICWINLIBS)
 	endif
 	LIBDIR := $(LIBDIR)/x86_64/
 	DEFINES += -DX86_64
@@ -137,14 +140,14 @@ BUILD_RELEASE:= $(patsubst $(SRC)/%,$(BUILDDIR)/$(SYSTEM).release/%,$(OBJECTS))
 all: debug
 
 debug: initDebug $(BUILD_DEBUG)
-	$(CC) $(LINKERFLAGS) $(BUILD_DEBUG) -o $(BUILDDIR)/$(BIN)_$(SYSTEM).debug$(EXT) $(LIBS)
+	$(CC) $(STATICLIBS) $(LINKERFLAGS) $(BUILD_DEBUG) -o $(BUILDDIR)/$(BIN)_$(SYSTEM).debug$(EXT) $(LIBS)
 	cp $(BUILDDIR)/$(BIN)_$(SYSTEM).debug$(EXT) $(BIN)$(EXT)
 
 $(BUILD_DEBUG) : $(BUILDDIR)/$(SYSTEM).debug/%.o: $(SRC)/%.cpp
 	$(CC) -g $(CCFLAGS) $(DEFINES) $< -o $@ $(INCLUDES)
 
 release: initRelease $(BUILD_RELEASE)
-	$(CC) $(LINKERFLAGS) $(BUILD_RELEASE) -o $(BUILDDIR)/$(BIN)_$(SYSTEM)$(EXT) $(LIBS)
+	$(CC) $(STATICWINLIBS) $(LINKERFLAGS) $(BUILD_RELEASE) -o $(BUILDDIR)/$(BIN)_$(SYSTEM)$(EXT) $(LIBS)
 
 $(BUILD_RELEASE) : $(BUILDDIR)/$(SYSTEM).release/%.o: $(SRC)/%.cpp
 	$(CC) $(CCFLAGS) $(DEFINES) $< -o $@ $(INCLUDES)
