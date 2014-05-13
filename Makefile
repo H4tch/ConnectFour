@@ -8,7 +8,7 @@ BIN 	:= game
 EXT		:= # Set to '.exe' on Windows.
 SRC 	:= $(PWD)/src
 BUILDDIR:= $(PWD)/build
-LIBDIR	:= $(PWD)/lib
+LIBDIR	:= lib
 SYSTEM	 = $(OS)_$(ARCH)
 CC  	:= g++
 CCFLAGS	:= -c -std=c++0x -Wall -pedantic `sdl2-config --cflags`
@@ -139,19 +139,22 @@ BUILD_RELEASE:= $(patsubst $(SRC)/%,$(BUILDDIR)/$(SYSTEM).release/%,$(OBJECTS))
 
 all: debug
 
-debug: initDebug $(BUILD_DEBUG)
+debug: init initDebug $(BUILD_DEBUG)
 	$(CC) $(STATICLIBS) $(LINKERFLAGS) $(BUILD_DEBUG) -o $(BUILDDIR)/$(BIN)_$(SYSTEM).debug$(EXT) $(LIBS)
 	cp $(BUILDDIR)/$(BIN)_$(SYSTEM).debug$(EXT) $(BIN)$(EXT)
 
 $(BUILD_DEBUG) : $(BUILDDIR)/$(SYSTEM).debug/%.o: $(SRC)/%.cpp
 	$(CC) -g $(CCFLAGS) $(DEFINES) $< -o $@ $(INCLUDES)
 
-release: initRelease $(BUILD_RELEASE)
+release: init initRelease $(BUILD_RELEASE)
 	$(CC) $(STATICWINLIBS) $(LINKERFLAGS) $(BUILD_RELEASE) -o $(BUILDDIR)/$(BIN)_$(SYSTEM)$(EXT) $(LIBS)
 
 $(BUILD_RELEASE) : $(BUILDDIR)/$(SYSTEM).release/%.o: $(SRC)/%.cpp
 	$(CC) $(CCFLAGS) $(DEFINES) $< -o $@ $(INCLUDES)
 
+init:
+	mkdir -p $(LIBDIR)
+	
 initDebug:
 	mkdir -p $(BUILDDIR)/$(SYSTEM).debug
 
@@ -159,6 +162,13 @@ initRelease:
 	mkdir -p $(BUILDDIR)/$(SYSTEM).release
 
 clean:
+	-@rm -rf $(BUILDDIR)/$(SYSTEM).debug/ > /dev/null 2>&1
+	-@rm $(BUILDDIR)/$(BIN)_$(SYSTEM).debug$(EXT) > /dev/null 2>&1
+	-@rm -rf $(BUILDDIR)/$(SYSTEM).release/ > /dev/null 2>&1
+	-@rm $(BUILDDIR)/$(BIN)_$(SYSTEM)$(EXT) > /dev/null 2>&1
+	-@rmdir $(BUILDDIR)/ > /dev/null 2>&1
+
+cleanAll:
 	mkdir -p $(BUILDDIR)
 	rm -r $(BUILDDIR)
 
@@ -166,8 +176,10 @@ clean:
 .PHONY: all
 .PHONY: debug
 .PHONY: release
+.PHONY: init
 .PHONY: initDebug
 .PHONY: initRelease
 .PHONY: clean
+.PHONY: cleanAll
 
 
