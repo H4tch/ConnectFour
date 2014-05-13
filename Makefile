@@ -169,8 +169,7 @@ clean:
 	-@rmdir $(BUILDDIR)/ > /dev/null 2>&1
 
 cleanAll:
-	mkdir -p $(BUILDDIR)
-	rm -r $(BUILDDIR)
+	-@rm -r $(BUILDDIR) > /dev/null 2>&1
 
 
 .PHONY: all
