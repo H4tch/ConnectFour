@@ -1,7 +1,18 @@
 ## Cross-Platform Makefile for Mac/Linux.
-## You can cross-compile to other platforms and architectures by exporting
-## OS and ARCH environment variables.
-## TODO: Bultin Ability to cross-compile dependecies.
+## MIT Licensed. Created by Dan H4tch.
+## 
+## Supported OS values are: Windows_NT, Linux, Darwin (osx).
+## Supported ARCH values are: x86, x86_64, arm (compiler not implemented).
+## 
+## Make Commands:
+## 	make - Builds a debug version for the current OS and ARCH.
+## 	make debug - same as above.
+## 	make release - Builds a release version for the current OS and ARCH.
+##	make package - Creates a Zip archive in the build direction of all compiled
+##					executables, data assets, and libraries.
+##	make clean - Remove debug and release builds for current OS and ARCH. 
+##	make cleanAll - Remove the build directory completely.
+
 
 
 BIN 	:= game
