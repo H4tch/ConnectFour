@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# TODO: The Windows binaries need the DLLs in the same directory as the exe.
+#		Should I make a script for Windows and Linux to launch the exe properly?
+
 Cores=2
 OS=Linux
 ARCH=x86_64

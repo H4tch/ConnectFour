@@ -28,9 +28,9 @@ CCFLAGS	:= -c -std=c++0x -Wall -pedantic `sdl2-config --cflags`
 LINKERFLAGS = -fuse-ld=gold -Wl,-Bdynamic,-rpath,\$$ORIGIN/$(LIBDIR)
 INCLUDES:= -Iinclude/
 LIBS 	 = -L$(LIBDIR)/$(ARCH)/ -lSDL2 -lSDL2_image -lSDL2_ttf #-lGL #box2d #sfml
-STATICLIBS := -Wl,-Bstatic -static-libgcc -static-libstdc++ 
-WINLIBS	:= -lmingw32 -lSDL2main -mwindows -lwinmm
-STATICWINLIBS := 
+STATICLIBS := -Wl,-Bstatic -static-libgcc -static-libstdc++
+WINLIBS	:= -lmingw32 -lSDL2main #-lwinpthread -mwindows -lwinmm 
+STATICWINLIBS :=  
 DEFINES	:= -DDATE='"'$$DATE'"'
 
 
