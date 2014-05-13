@@ -5,6 +5,8 @@
 
 
 BIN 	:= game
+VERSION	:= v1.0
+DATA	:= data
 EXT		:= # Set to '.exe' on Windows.
 SRC 	:= $(PWD)/src
 BUILDDIR:= $(PWD)/build
@@ -14,7 +16,7 @@ CC  	:= g++
 CCFLAGS	:= -c -std=c++0x -Wall -pedantic `sdl2-config --cflags`
 LINKERFLAGS = -fuse-ld=gold -Wl,-Bdynamic,-rpath,\$$ORIGIN/$(LIBDIR)
 INCLUDES:= -Iinclude/
-LIBS 	 = -L$(LIBDIR) -lSDL2 -lSDL2_image -lSDL2_ttf #-lGL #box2d #sfml
+LIBS 	 = -L$(LIBDIR)/$(ARCH)/ -lSDL2 -lSDL2_image -lSDL2_ttf #-lGL #box2d #sfml
 STATICLIBS := -Wl,-Bstatic -static-libgcc -static-libstdc++ 
 WINLIBS	:= -lmingw32 -lSDL2main -mwindows -lwinmm
 STATICWINLIBS := 
@@ -100,7 +102,6 @@ ifeq ($(ARCH),x86_64)
 		INCLUDES += -I/usr/x86_64-w64-mingw32/include/
 		STATICLIBS += $(STATICWINLIBS)
 	endif
-	LIBDIR := $(LIBDIR)/x86_64/
 	DEFINES += -DX86_64
 else ifeq ($(ARCH),x86)
 	ifeq ($(OS), Windows_NT)
@@ -109,7 +110,6 @@ else ifeq ($(ARCH),x86)
 	endif
 	CCFLAGS += -m32
 	LINKERFLAGS += -m32
-	LIBDIR := $(LIBDIR)/x86/
 	DEFINES += -DX86
 else ifeq ($(ARCH),arm)
 	ifeq ($(OS), Windows_NT)
@@ -117,7 +117,6 @@ else ifeq ($(ARCH),arm)
 	else
 		CC = NEED_ARM_COMPILER
 	endif
-	LIBDIR := $(LIBDIR)/arm/
 	DEFINES += -DARM
 endif
 #### DONE SETTING UP COMPILER AND COMPILER FLAGS ####
@@ -152,8 +151,18 @@ release: init initRelease $(BUILD_RELEASE)
 $(BUILD_RELEASE) : $(BUILDDIR)/$(SYSTEM).release/%.o: $(SRC)/%.cpp
 	$(CC) $(CCFLAGS) $(DEFINES) $< -o $@ $(INCLUDES)
 
+package:
+	mkdir -p $(BUILDDIR)/$(BIN)_$(VERSION)
+	cp -a $(DATA) $(BUILDDIR)/$(BIN)_$(VERSION)/
+	cp -a $(LIBDIR) $(BUILDDIR)/$(BIN)_$(VERSION)/
+	@for binary in $(shell find build/ -maxdepth 1 -type f -printf '%f\n'); do \
+		cp $(BUILDDIR)/$$binary $(BUILDDIR)/$(BIN)_$(VERSION)/; \
+	done
+	-@rm $(BIN)_$(VERSION).zip
+	-cd $(BUILDDIR)/ && zip -r ../$(BIN)_$(VERSION).zip $(BIN)_$(VERSION)/; cd ../
+
 init:
-	mkdir -p $(LIBDIR)
+	mkdir -p $(LIBDIR)/$(ARCH)/
 	
 initDebug:
 	mkdir -p $(BUILDDIR)/$(SYSTEM).debug
@@ -175,6 +184,7 @@ cleanAll:
 .PHONY: all
 .PHONY: debug
 .PHONY: release
+.PHONY: package
 .PHONY: init
 .PHONY: initDebug
 .PHONY: initRelease
