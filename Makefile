@@ -1,39 +1,66 @@
+## 
 ## Cross-Platform Makefile for Mac/Linux.
 ## MIT Licensed. Created by Dan H4tch.
 ## 
-## Supported OS values are: Windows_NT, Linux, Darwin (osx).
+## Supported OS values are: Windows_NT, Windows, Linux, and Darwin (osx).
 ## Supported ARCH values are: x86, x86_64, arm (compiler not implemented).
-## 
+## 	Note: These will be automatically determined if not set.
+##
 ## Make Commands:
 ## 	make - Builds a debug version for the current OS and ARCH.
 ## 	make debug - same as above.
 ## 	make release - Builds a release version for the current OS and ARCH.
 ##	make package - Creates a Zip archive in the build direction of all compiled
 ##					executables, data assets, and libraries.
+##					Note: Removes debug build files.
 ##	make clean - Remove debug and release builds for current OS and ARCH. 
+##	make cleanDebug - Remove debug build files.
 ##	make cleanAll - Remove the build directory completely.
+## 
 
 
+## TODO:
+##	Make BUILDDIR configurable.
+##	Don't store any absolute paths in variables?
+##	Add Install Script / Desktop Launcher file for Linux.
+##	Look into NSIS for a Windows installer. 
+##	Change OS and ARCH to produce more "friendly" named files?
+##		Something like this: game_Linux_32, game_Windows_64, game_Mac_32
+## 		Arm would be "_arm32" and "_arm64", not counting the different ABIs.
+##	More Platforms: x64, ia32, etc?
+##	Add optimization options to compiler for "release" builds.
+##	Basic Test suite.
+##		`make test`
+##		`make testrun`
+##	ERROR out if ARCH is invalid. For OS, default to Linux? Add Unix?
+##	What happens if I cross compile for Mac on Linux? Then want to build $
+##		natively on Mac? Same with Windows. How should I best handle this??
+##		Add another variable? If Mac, if Darwin == "uname -s".... 
 
+
+NAME	:= ConnectFour
 BIN 	:= game
 VERSION	:= v1.0
 DATA	:= data
-EXT		:= # Set to '.exe' on Windows.
+EXT		:= # Set to '.exe' on Windows. I might set to '.bin' for Unixes.
 SRC 	:= $(PWD)/src
-BUILDDIR:= $(PWD)/build
+BUILDDIR:= build
 LIBDIR	:= lib
 SYSTEM	 = $(OS)_$(ARCH)
 CC  	:= g++
 CCFLAGS	:= -c -std=c++0x -Wall -pedantic `sdl2-config --cflags`
-LINKERFLAGS = -fuse-ld=gold -Wl,-Bdynamic,-rpath,\$$ORIGIN/$(LIBDIR)
-INCLUDES:= -Iinclude/
-LIBS 	 = -L$(LIBDIR)/$(ARCH)/ -lSDL2 -lSDL2_image -lSDL2_ttf #-lGL #box2d #sfml
-STATICLIBS := -Wl,-Bstatic -static-libgcc -static-libstdc++
+LDFLAGS	= -fuse-ld=gold -Wl,-Bdynamic,-rpath,\$$ORIGIN/$(LIBDIR)
+INCLUDES:= -Iinclude/#$(SYSTEM)/
+LIBS 	 = -L$(LIBDIR)/$(SYSTEM)/ -lSDL2 -lSDL2_image -lSDL2_ttf #-lGL -lbox2d
+STATICLIBS := -static-libstdc++ -static-libgcc -Wl,-Bstatic
 WINLIBS	:= -lmingw32 -lSDL2main #-lwinpthread -mwindows -lwinmm 
 STATICWINLIBS :=  
 DEFINES	:= -DDATE='"'$$DATE'"'
 
 
+#OSS 	= "Linux Mac Windows"
+#ARCHS	= "arm x86 x86_64"
+ 
 
 #### BEGIN SECTION FOR DETECTING AND FIXING UP ARCH ####
 # If we are on Linux cross-compiling to Windows, make sure ARCH is setup
@@ -47,7 +74,7 @@ ifeq ($(ARCH),)
 	endif
 endif
 
-# More robust architecture detection on Windows.
+# Better architecture detection on Windows.
 ifneq ($(PROCESSOR_ARCHITEW6432),)
 	PROCESSOR_ARCHITECTURE = $(PROCESSOR_ARCHITEW6432)
 endif
@@ -98,6 +125,10 @@ ifeq ($(OS),)
 endif
 
 ifeq ($(OS),Windows_NT)
+	OS := Windows
+endif
+
+ifeq ($(OS),Windows)
 	EXT 	:= .exe
 	LIBS 	:= $(WINLIBS) $(LIBS)
 	DEFINES	+= -DWIN32
@@ -108,29 +139,32 @@ else ifeq ($(OS), Darwin)
 endif
 
 ifeq ($(ARCH),x86_64)
-	ifeq ($(OS), Windows_NT)
+	BITS = 64
+	ifeq ($(OS), Windows)
 		CC = x86_64-w64-mingw32-g++
 		INCLUDES += -I/usr/x86_64-w64-mingw32/include/
 		STATICLIBS += $(STATICWINLIBS)
 	endif
 	DEFINES += -DX86_64
 else ifeq ($(ARCH),x86)
-	ifeq ($(OS), Windows_NT)
+	BITS = 32
+	ifeq ($(OS), Windows)
 		CC = i686-w64-mingw32-g++
 		INCLUDES += -I/usr/i686-w64-mingw32/include/
 	endif
 	CCFLAGS += -m32
-	LINKERFLAGS += -m32
+	LDFLAGS += -m32
 	DEFINES += -DX86
 else ifeq ($(ARCH),arm)
-	ifeq ($(OS), Windows_NT)
+	BITS = 32
+	ifeq ($(OS), Windows)
 		CC = NEED_MING_ARM_COMPILER
 	else
 		CC = NEED_ARM_COMPILER
 	endif
 	DEFINES += -DARM
 endif
-#### DONE SETTING UP COMPILER AND COMPILER FLAGS ####
+#### DONE SETTING UP VARIABLES AND COMPILER FLAGS ####
 
 
 
@@ -139,7 +173,6 @@ SOURCES	:=	 				\
 	$(SRC)/Game.cpp			\
 	$(SRC)/Board.cpp		
 
-# This could probably be skipped.
 OBJECTS	:= $(SOURCES:.cpp=.o)
 
 BUILD_DEBUG	:= $(patsubst $(SRC)/%,$(BUILDDIR)/$(SYSTEM).debug/%,$(OBJECTS))
@@ -149,37 +182,71 @@ BUILD_RELEASE:= $(patsubst $(SRC)/%,$(BUILDDIR)/$(SYSTEM).release/%,$(OBJECTS))
 
 all: debug
 
+
 debug: init initDebug $(BUILD_DEBUG)
-	$(CC) $(STATICLIBS) $(LINKERFLAGS) $(BUILD_DEBUG) -o $(BUILDDIR)/$(BIN)_$(SYSTEM).debug$(EXT) $(LIBS)
+	$(CC) -g $(STATICLIBS) $(LDFLAGS) $(BUILD_DEBUG) \
+		-o $(BUILDDIR)/$(BIN)_$(SYSTEM).debug$(EXT) $(LIBS)
 	cp $(BUILDDIR)/$(BIN)_$(SYSTEM).debug$(EXT) $(BIN)$(EXT)
 
+
 $(BUILD_DEBUG) : $(BUILDDIR)/$(SYSTEM).debug/%.o: $(SRC)/%.cpp
-	$(CC) -g $(CCFLAGS) $(DEFINES) $< -o $@ $(INCLUDES)
+	$(CC) -g $(CCFLAGS) -DDEBUG $(DEFINES) $< -o $@ $(INCLUDES)
+
 
 release: init initRelease $(BUILD_RELEASE)
-	$(CC) $(STATICWINLIBS) $(LINKERFLAGS) $(BUILD_RELEASE) -o $(BUILDDIR)/$(BIN)_$(SYSTEM)$(EXT) $(LIBS)
+	$(CC) $(STATICLIBS) $(LDFLAGS) $(BUILD_RELEASE) \
+		-o $(BUILDDIR)/$(BIN)_$(SYSTEM)$(EXT) $(LIBS)
+	cp $(BUILDDIR)/$(BIN)_$(SYSTEM)$(EXT) $(BIN)$(EXT)
+
 
 $(BUILD_RELEASE) : $(BUILDDIR)/$(SYSTEM).release/%.o: $(SRC)/%.cpp
-	$(CC) $(CCFLAGS) $(DEFINES) $< -o $@ $(INCLUDES)
+	$(CC) $(CCFLAGS) -DNDEBUG $(DEFINES) $< -o $@ $(INCLUDES)
 
-package:
-	mkdir -p $(BUILDDIR)/$(BIN)_$(VERSION)
-	cp -a $(DATA) $(BUILDDIR)/$(BIN)_$(VERSION)/
-	cp -a $(LIBDIR) $(BUILDDIR)/$(BIN)_$(VERSION)/
-	@for binary in $(shell find build/ -maxdepth 1 -type f -printf '%f\n'); do \
-		cp $(BUILDDIR)/$$binary $(BUILDDIR)/$(BIN)_$(VERSION)/; \
+
+## TODO:
+## 	Make the Zip file a target, so make will only build it the sources change.
+##	Create a bin directory where everything is stored by platform.
+##	Move the exe into the bin directory for windows version.
+##	If a linux(or Mac!) build was added, copy over LaunchOnLinux.sh, but rename 
+##	 	it. Same as above for Windows, but copy LaunchOnWindows.bat.
+PACKAGEDIR := $(BUILDDIR)/$(NAME)_$(VERSION)
+package: cleanDebug
+	mkdir -p $(PACKAGEDIR)/
+	cp -a $(DATA) $(PACKAGEDIR)/
+	cp -a $(LIBDIR)/* $(PACKAGEDIR)/
+	# For each compiled binary, copy it into the package.
+	@for binary in $(shell find $(BUILDDIR) -maxdepth 1 -type f -printf '%f\n'); do \
+		echo $$binary | grep Windows; \
+		# If it is a Windows binary, copy it into the Windows bin folder. \
+		if [ $$? -eq 0 ]; then \
+			# Strip the bin name, extension, and build path from the binary. \
+			export DEST=`echo $$binary | sed s/$(BIN)_//g | sed s/.exe//g`; \
+			cp $(BUILDDIR)/$$binary $(PACKAGEDIR)/$$DEST/$(BIN).exe; \
+			cp LaunchOnWindows.bat $(PACKAGEDIR)/$(BIN).bat; \
+		else \
+			# TODO Move binary to Linux bin foler... \
+			cp $(BUILDDIR)/$$binary $(PACKAGEDIR)/; \
+			cp LaunchOnLinux.sh $(PACKAGEDIR)/$(BIN).sh; \
+		fi; \
 	done
-	-@rm $(BIN)_$(VERSION).zip
-	-cd $(BUILDDIR)/ && zip -r ../$(BIN)_$(VERSION).zip $(BIN)_$(VERSION)/; cd ../
+	-@rm $(NAME)_$(VERSION).zip
+	-cd $(BUILDDIR)/ && \
+	zip -r ../$(NAME)_$(VERSION).zip $(NAME)_$(VERSION)/;	
+
+#find $(LIBDIR)/* -maxdepth 1 -type d #-printf '%f\n'
+
 
 init:
-	mkdir -p $(LIBDIR)/$(ARCH)/
-	
+	#mkdir -p $(LIBDIR)/$(SYSTEM)/
+
+
 initDebug:
 	mkdir -p $(BUILDDIR)/$(SYSTEM).debug
 
+
 initRelease:
 	mkdir -p $(BUILDDIR)/$(SYSTEM).release
+
 
 clean:
 	-@rm -rf $(BUILDDIR)/$(SYSTEM).debug/ > /dev/null 2>&1
@@ -188,18 +255,27 @@ clean:
 	-@rm $(BUILDDIR)/$(BIN)_$(SYSTEM)$(EXT) > /dev/null 2>&1
 	-@rmdir $(BUILDDIR)/ > /dev/null 2>&1
 
+
+cleanDebug:
+	-@rm -rf $(BUILDDIR)/*.debug
+	-@rm $(BUILDDIR)/*.debug*
+
+
 cleanAll:
 	-@rm -r $(BUILDDIR) > /dev/null 2>&1
+
 
 
 .PHONY: all
 .PHONY: debug
 .PHONY: release
 .PHONY: package
+.PHONY: packageLinux
+.PHONY: packageWindows
 .PHONY: init
 .PHONY: initDebug
 .PHONY: initRelease
 .PHONY: clean
+.PHONY: cleanDebug
 .PHONY: cleanAll
-
 
