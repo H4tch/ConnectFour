@@ -11,13 +11,13 @@ ARCHIVE=tar.gz
 mkdir -p $DIR
 cd $DIR
 
-wget -c http://www.libsdl.org/release/SDL2-devel-2.0.3-mingw.tar.gz -O SDL2-$VERSION-$ARCHIVE
-wget -c https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.0-mingw.tar.gz -O SDL2_image-$VERSION-$ARCHIVE
-wget -c https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.12-mingw.tar.gz -O SDL2_ttf-$VERSION-$ARCHIVE
-wget -c http://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.0-mingw.tar.gz -O SDL2_mixer-$VERSION-$ARCHIVE
+wget -c http://www.libsdl.org/release/SDL2-devel-2.0.3-mingw.tar.gz -O SDL2-$VERSION.$ARCHIVE
+wget -c https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.0-mingw.tar.gz -O SDL2_image-$VERSION.$ARCHIVE
+wget -c https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.12-mingw.tar.gz -O SDL2_ttf-$VERSION.$ARCHIVE
+wget -c http://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.0-mingw.tar.gz -O SDL2_mixer-$VERSION.$ARCHIVE
 
 for LIB in $LIBS; do
-	tar -xzf $LIB-$VERSION-$ARCHIVE
+	tar -xzf $LIB-$VERSION.$ARCHIVE
 	mv $LIB-$VERSION.* $LIB-$VERSION
 	cp $LIB-$VERSION/Makefile $LIB-$VERSION/Makefile.bak
 	cat $LIB-$VERSION/Makefile | sed s/"\$(CROSS_PATH)"/"\/"usr/g > $LIB-$VERSION/Makefile

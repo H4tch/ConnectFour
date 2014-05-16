@@ -5,7 +5,7 @@
 ## Supported OS values are: Windows_NT, Windows, Linux, and Darwin (osx).
 ## Supported ARCH values are: x86, x86_64, arm (compiler not implemented).
 ## 	Note: These will be automatically determined if not set.
-##
+## 
 ## Make Commands:
 ## 	make - Builds a debug version for the current OS and ARCH.
 ## 	make debug - same as above.
@@ -18,10 +18,11 @@
 ##	make cleanAll - Remove the build directory completely.
 ## 
 
-
+ 
 ## TODO:
+##	-----> GET ALL DEPENDENCIES FOR LINUX BUILDS <-----
+##	Use same lib structure for build system and deployment.
 ##	Make BUILDDIR configurable.
-##	Don't store any absolute paths in variables?
 ##	Add Install Script / Desktop Launcher file for Linux.
 ##	Look into NSIS for a Windows installer. 
 ##	Change OS and ARCH to produce more "friendly" named files?
@@ -43,14 +44,14 @@ BIN 	:= game
 VERSION	:= v1.0
 DATA	:= data
 EXT		:= # Set to '.exe' on Windows. I might set to '.bin' for Unixes.
-SRC 	:= $(PWD)/src
+SRC 	:= src
 BUILDDIR:= build
 LIBDIR	:= lib
 SYSTEM	 = $(OS)_$(ARCH)
 CC  	:= g++
 CCFLAGS	:= -c -std=c++0x -Wall -pedantic `sdl2-config --cflags`
-LDFLAGS	= -fuse-ld=gold -Wl,-Bdynamic,-rpath,\$$ORIGIN/$(LIBDIR)
-INCLUDES:= -Iinclude/#$(SYSTEM)/
+LDFLAGS	= -fuse-ld=gold -Wl,-Bdynamic,-rpath,\$$ORIGIN/$(LIBDIR)/$(SYSTEM)
+INCLUDES:= -Iinclude/
 LIBS 	 = -L$(LIBDIR)/$(SYSTEM)/ -lSDL2 -lSDL2_image -lSDL2_ttf #-lGL -lbox2d
 STATICLIBS := -static-libstdc++ -static-libgcc -Wl,-Bstatic
 WINLIBS	:= -lmingw32 -lSDL2main #-lwinpthread -mwindows -lwinmm 
@@ -63,9 +64,8 @@ DEFINES	:= -DDATE='"'$$DATE'"'
  
 
 #### BEGIN SECTION FOR DETECTING AND FIXING UP ARCH ####
-# If we are on Linux cross-compiling to Windows, make sure ARCH is setup
-# correctly. This means we can't test for Windows_NT directly.
 # NOTE: WINDOWS ARCH VALUES CAN BE: AMD64 IA64 x86
+# If we are on Linux cross-compiling to Windows, use Unix tools to find ARCH.
 ifeq ($(ARCH),)
 	ifeq ($(PROCESSOR_ARCHITECTURE),)
 		ARCH := $(shell uname -p)
@@ -115,7 +115,6 @@ else ifeq ($(ARCH),ARM)
 	ARCH := arm
 endif
 #### DONE SETTING UP ARCH ####
-
 
 
 #### DETECT OS AND SET UP COMPILER AND FLAGS ####
@@ -204,16 +203,13 @@ $(BUILD_RELEASE) : $(BUILDDIR)/$(SYSTEM).release/%.o: $(SRC)/%.cpp
 
 
 ## TODO:
-## 	Make the Zip file a target, so make will only build it the sources change.
-##	Create a bin directory where everything is stored by platform.
-##	Move the exe into the bin directory for windows version.
-##	If a linux(or Mac!) build was added, copy over LaunchOnLinux.sh, but rename 
-##	 	it. Same as above for Windows, but copy LaunchOnWindows.bat.
+## 	Make the Zip file(s) a target.
+##	Each platform has a zip target. The zip needs build/$(SYSTEM).release as a dependency. 
 PACKAGEDIR := $(BUILDDIR)/$(NAME)_$(VERSION)
 package: cleanDebug
-	mkdir -p $(PACKAGEDIR)/
+	mkdir -p $(PACKAGEDIR)/$(LIBDIR)/
 	cp -a $(DATA) $(PACKAGEDIR)/
-	cp -a $(LIBDIR)/* $(PACKAGEDIR)/
+	cp -a $(LIBDIR)/* $(PACKAGEDIR)/$(LIBDIR)/
 	# For each compiled binary, copy it into the package.
 	@for binary in $(shell find $(BUILDDIR) -maxdepth 1 -type f -printf '%f\n'); do \
 		echo $$binary | grep Windows; \
@@ -221,19 +217,17 @@ package: cleanDebug
 		if [ $$? -eq 0 ]; then \
 			# Strip the bin name, extension, and build path from the binary. \
 			export DEST=`echo $$binary | sed s/$(BIN)_//g | sed s/.exe//g`; \
-			cp $(BUILDDIR)/$$binary $(PACKAGEDIR)/$$DEST/$(BIN).exe; \
-			cp LaunchOnWindows.bat $(PACKAGEDIR)/$(BIN).bat; \
+			cp $(BUILDDIR)/$$binary $(PACKAGEDIR)/$(LIBDIR)/$$DEST/$(BIN).exe; \
+			cp tools/LaunchOnWindows.bat $(PACKAGEDIR)/$(BIN).bat; \
 		else \
 			# TODO Move binary to Linux bin foler... \
 			cp $(BUILDDIR)/$$binary $(PACKAGEDIR)/; \
-			cp LaunchOnLinux.sh $(PACKAGEDIR)/$(BIN).sh; \
+			cp tools/LaunchOnLinux.sh $(PACKAGEDIR)/$(BIN).sh; \
 		fi; \
 	done
 	-@rm $(NAME)_$(VERSION).zip
 	-cd $(BUILDDIR)/ && \
 	zip -r ../$(NAME)_$(VERSION).zip $(NAME)_$(VERSION)/;	
-
-#find $(LIBDIR)/* -maxdepth 1 -type d #-printf '%f\n'
 
 
 init:

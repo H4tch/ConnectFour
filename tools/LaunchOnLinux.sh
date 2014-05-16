@@ -25,7 +25,7 @@ arm*|*arm|*arm*)
 esac
 
 
-export LD_PRELOAD="`ls -d -1 $PWD/lib/Linux_x86/*`" && \
+export LD_LIBRARY_PATH="$PWD/lib/$OS"_"$ARCH/":$LD_LIBRARY_PATH && \
 	./"game_"$OS"_"$ARCH
 
 
