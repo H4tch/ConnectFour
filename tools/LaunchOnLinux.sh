@@ -1,11 +1,9 @@
 #!/bin/sh
 
-OS=`uname -s`
-ARCH=`uname -m`
+if [ "$OS" = "" ]; then OS=`uname -s`; fi
+if [ "$ARCH" = "" ]; then ARCH=`uname -m`; fi
 
-if [ "$OS" = "Darwin" ]; then
-	OS="Mac"
-fi
+if [ "$OS" = "Darwin" ]; then OS="Mac"; fi
 
 case $ARCH in
 x86_64)
@@ -27,6 +25,5 @@ esac
 
 export LD_LIBRARY_PATH="$PWD/lib/$OS"_"$ARCH/":$LD_LIBRARY_PATH && \
 	./"game_"$OS"_"$ARCH
-
 
 
