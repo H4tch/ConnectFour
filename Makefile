@@ -20,23 +20,22 @@
 
  
 ## TODO:
-##	-----> GET ALL DEPENDENCIES FOR LINUX BUILDS <-----
-##	Use same lib structure for build system and deployment.
-##	Make BUILDDIR configurable.
-##	Add Install Script / Desktop Launcher file for Linux.
+##	Metadata for built packages.
 ##	Look into NSIS for a Windows installer. 
+##	Add optimization options to compiler for "release" builds.
+##	Android build chain.
+##	Make BUILDDIR configurable.
 ##	Change OS and ARCH to produce more "friendly" named files?
 ##		Something like this: game_Linux_32, game_Windows_64, game_Mac_32
 ## 		Arm would be "_arm32" and "_arm64", not counting the different ABIs.
 ##	More Platforms: x64, ia32, etc?
-##	Add optimization options to compiler for "release" builds.
 ##	Basic Test suite.
 ##		`make test`
 ##		`make testrun`
 ##	ERROR out if ARCH is invalid. For OS, default to Linux? Add Unix?
-##	What happens if I cross compile for Mac on Linux? Then want to build $
-##		natively on Mac? Same with Windows. How should I best handle this??
-##		Add another variable? If Mac, if Darwin == "uname -s".... 
+## 	Make the Zip file(s) a target. Each platform has a zip target.
+##		The zip needs build/$(SYSTEM).release as a dependency. 
+##	Move compile Linux binary to bin/lb folder.
 
 
 NAME	:= ConnectFour
@@ -118,7 +117,6 @@ endif
 
 
 #### DETECT OS AND SET UP COMPILER AND FLAGS ####
-# TODO: Android build chain.
 ifeq ($(OS),)
 	OS := $(shell uname -s)
 endif
@@ -202,9 +200,6 @@ $(BUILD_RELEASE) : $(BUILDDIR)/$(SYSTEM).release/%.o: $(SRC)/%.cpp
 	$(CC) $(CCFLAGS) -DNDEBUG $(DEFINES) $< -o $@ $(INCLUDES)
 
 
-## TODO:
-## 	Make the Zip file(s) a target.
-##	Each platform has a zip target. The zip needs build/$(SYSTEM).release as a dependency. 
 PACKAGEDIR := $(BUILDDIR)/$(NAME)_$(VERSION)
 package: cleanDebug
 	mkdir -p $(PACKAGEDIR)/$(LIBDIR)/
@@ -220,7 +215,6 @@ package: cleanDebug
 			cp $(BUILDDIR)/$$binary $(PACKAGEDIR)/$(LIBDIR)/$$DEST/$(BIN).exe; \
 			cp tools/LaunchOnWindows.bat $(PACKAGEDIR)/$(BIN).bat; \
 		else \
-			# TODO Move binary to Linux bin foler... \
 			cp $(BUILDDIR)/$$binary $(PACKAGEDIR)/; \
 			cp tools/LaunchOnLinux.sh $(PACKAGEDIR)/$(BIN).sh; \
 		fi; \
