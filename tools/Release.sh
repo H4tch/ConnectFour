@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export Cores=2
+export Cores=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
 export OS=Linux
 export ARCH=x86_64
 

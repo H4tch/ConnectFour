@@ -67,7 +67,7 @@ DEFINES	:= -DDATE='"'$$DATE'"'
 # If we are on Linux cross-compiling to Windows, use Unix tools to find ARCH.
 ifeq ($(ARCH),)
 	ifeq ($(PROCESSOR_ARCHITECTURE),)
-		ARCH := $(shell uname -p)
+		ARCH := $(shell uname -m)
 	else
 		ARCH := PROCESSOR_ARCHITECTURE
 	endif
@@ -96,6 +96,7 @@ ifeq ($(PROCESSOR_ARCHITECTURE),)
 endif
 
 # Catch other possible ARCH values and correct it. 
+#sed 's/x86_//;s/i[3-6]86/x86/'
 ifeq ($(ARCH),ia32)
 	ARCH := x86
 else ifeq ($(ARCH),IA32)
@@ -139,7 +140,7 @@ ifeq ($(ARCH),x86_64)
 	BITS = 64
 	ifeq ($(OS), Windows)
 		CC = x86_64-w64-mingw32-g++
-		INCLUDES += -I/usr/x86_64-w64-mingw32/include/
+		#INCLUDES += -I/usr/x86_64-w64-mingw32/include/
 		STATICLIBS += $(STATICWINLIBS)
 	endif
 	DEFINES += -DX86_64
@@ -147,7 +148,7 @@ else ifeq ($(ARCH),x86)
 	BITS = 32
 	ifeq ($(OS), Windows)
 		CC = i686-w64-mingw32-g++
-		INCLUDES += -I/usr/i686-w64-mingw32/include/
+		#INCLUDES += -I/usr/i686-w64-mingw32/include/
 	endif
 	CCFLAGS += -m32
 	LDFLAGS += -m32
